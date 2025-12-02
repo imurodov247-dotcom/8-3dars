@@ -17,6 +17,8 @@ urlpatterns = [
     path('api/',include(router.urls)),
      path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/tests/<int:test_pk>/questions',views.QuestionApiView.as_view(),name="question")
+    path('api/tests/<int:test_pk>/questions',views.QuestionApiView.as_view(),name="question_post"),
+    path('api/tests/<int:test_pk>/submission',views.SubmissionApiview.as_view(),name="submission_post"),
+    path('api/submissions/',views.SubmissionListView.as_view(),name="submission_post"),
     
 ]

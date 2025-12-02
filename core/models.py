@@ -29,7 +29,7 @@ class Submission(models.Model):
 class SelectedAnswer(models.Model):
     question = models.ForeignKey(Question,on_delete=models.CASCADE)
     answer = models.ForeignKey(Answers,on_delete=models.CASCADE)
-    submission = models.ForeignKey(Submission,on_delete=models.CASCADE)
+    submission = models.ForeignKey(Submission,on_delete=models.CASCADE,related_name="selected_answers")
     is_correct = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
     

@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from . import serializers
 from . import models
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView,ListAPIView
 # Create your views here.
 
 class HelloView(APIView):
@@ -41,3 +41,23 @@ class QuestionApiView(APIView):
         
         return Response(question_serializer.data,status=201)
     
+    
+class SubmissionApiview(APIView):
+    # permission_classes = [IsAuthenticated]
+    
+    def post(self,request,test_pk):
+        try:
+            test = models.Test.objects.get(pk=test_pk)
+        except models.Test.DoesNotExist:
+            return Response({"error":"test not found"})
+        
+        serializer = serializers.SubmissionSerializer(data =request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.sava(test=test,user=self.request.user)
+        
+        
+        return Response(serializer.data, status=201)
+    
+class SubmissionListView(ListAPIView):
+    serializer_class = serializers.SubmissionSerializer
+    queryset =  models.Submission.objects.all()            

@@ -23,7 +23,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     answers = AnswerSerializer(many=True)
-    test = serializers.PrimaryKeyRelatedField(queryset=Test.objects.all(),write_only=True)
+    # test = serializers.PrimaryKeyRelatedField(queryset=Test.objects.all(),write_only=True)
     class Meta:
         model = Question
         fields = ["id",'title','answers','test']
@@ -56,4 +56,32 @@ class TestSerializers(serializers.ModelSerializer):
         model = Test
         fields = ["id","nomi","creator","questions"]
     
+class SelectedAnswerSerializer(serializers.Serializer):
+    question = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all())
+    answer = serializers.PrimaryKeyRelatedField(queryset=Answers.objects.all())
+    
+
+
+class SubmissionSerializer(serializers.Serializer):
+    test = serializers.PrimaryKeyRelatedField(queryset=Test.objects.all())
+    selected_answers = SelectedAnswerSerializer(many=True)
+    corrected_count = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    
+    
+    def create(self, validated_data):
+        test = validated_data.pop("test")
+        user =  validated_data.pop("user")
         
+        submission = Submission.objects.create(test=test,user=user)
+        
+        count=0
+        
+        for selected_answer in validated_data["selected_answers"]:
+            answer = selected_answer["answer"]
+            SelectedAnswer.objects.create(**selected_answer,submission=submission,is_correct=answer.is_correct)
+            
+            if answer.is_correct:
+                corrected_count+=1
+        return submission
+     
