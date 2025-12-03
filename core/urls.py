@@ -10,15 +10,17 @@ from rest_framework_simplejwt.views import (
 )
 
 router = DefaultRouter()
-router.register("tests",views.TestModelViewSet)
+router.register("",views.TestModelViewSet)
 
 urlpatterns = [
     path('', views.HelloView.as_view(),name="hello"),
     path('api/',include(router.urls)),
-     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+     path('api/auth/login/', views.CustomObtainPairview.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/tests/<int:test_pk>/questions',views.QuestionApiView.as_view(),name="question_post"),
+    # path('api/tests/<int:test_pk>/questions',views.QuestionApiView.as_view(),name="question_post"),
     path('api/tests/<int:test_pk>/submission',views.SubmissionApiview.as_view(),name="submission_post"),
-    path('api/submissions/',views.SubmissionListView.as_view(),name="submission_post"),
+    path('api/submissions',views.SubmissionListView.as_view(),name="submission_post"),
+    path('api/my_test',views.SubmissionListView.as_view(),name="mytest-list"),
+    path('api/tests/<int:test_id>/questions',views.TestQuestionListView.as_view(),name="mytest-list"),
     
 ]

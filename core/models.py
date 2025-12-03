@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Create your models here.
-class Test(models.Model):
+class   Test(models.Model):
     nomi = models.CharField(max_length=250)
     creator = models.ForeignKey(User,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,7 +21,7 @@ class Answers(models.Model):
     
     
 class Submission(models.Model):
-    test = models.ForeignKey(Test,on_delete=models.CASCADE)
+    test = models.ForeignKey(Test,on_delete=models.CASCADE,related_name="submissions")
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     

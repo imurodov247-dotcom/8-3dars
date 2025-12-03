@@ -5,7 +5,9 @@ from rest_framework.viewsets import ModelViewSet
 from . import serializers
 from . import models
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import CreateAPIView,ListAPIView
+from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.exceptions import NotFound
 # Create your views here.
 
 class HelloView(APIView):
@@ -61,3 +63,34 @@ class SubmissionApiview(APIView):
 class SubmissionListView(ListAPIView):
     serializer_class = serializers.SubmissionSerializer
     queryset =  models.Submission.objects.all()            
+    
+    
+class CustomObtainPairview(TokenObtainPairView):
+    serializer_class = serializers.CustomTokenObtainViewSerializer
+    
+class MyTestListview(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.MyTestSerializers
+    
+    def get_queryset(self):
+        return models.Test.objects.filter(creator=self.request.user)
+    
+    
+class TestQuestionListView(ListCreateAPIView):
+    serializer_class = serializers.QuestionSerializer
+    
+    def get_test(self):
+        try:
+            return models.Test.objects.get(pk=self.kwargs["test_id"])
+        except models.Test.DoesNotExist:
+            raise NotFound(detail="Test not found ")
+        
+    
+    def get_queryset(self):
+        test=self.get_test()
+        return models.Question.objects.filter(test=test)
+    
+    def perform_create(self, serializer):
+        test = self.get_test()
+        serializer.save(test=test)
+    

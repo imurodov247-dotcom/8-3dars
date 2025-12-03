@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Test,Question,Answers,Submission,SelectedAnswer
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 User = get_user_model()
 
 
@@ -85,3 +85,31 @@ class SubmissionSerializer(serializers.Serializer):
                 corrected_count+=1
         return submission
      
+     
+class CustomTokenObtainViewSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data = {}
+        data["accessToken"] = data.pop("access")
+        data["refreshToken"] = data.pop("refresh")
+        data["user"] = {
+            "user_id":self.user.id,
+            "username":self.user.username,
+            "avatar_url":""
+        }
+        
+        return data
+        
+class MyTestSerializers(serializers.ModelSerializer):
+    savollar_soni = serializers.SerializerMethodField()
+    submissionlar_soni = serializers.SerializerMethodField()
+    class Meta:
+        model = Test
+        fields = ["id","nomi","created_at","savollar_soni","submissionlar_soni"]
+        
+    def get_savollar_soni(self, obj):
+        return obj.questions.count()
+    
+    def get_submissionlar_soni(self, obj):
+        return obj.submissions.count()
+    
