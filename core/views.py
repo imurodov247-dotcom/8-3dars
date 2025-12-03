@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from . import serializers
 from . import models
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView
+from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.exceptions import NotFound
 # Create your views here.
@@ -93,4 +93,9 @@ class TestQuestionListView(ListCreateAPIView):
     def perform_create(self, serializer):
         test = self.get_test()
         serializer.save(test=test)
+    
+    
+class TestQuestionDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = serializers.QuestionSerializer
+    queryset = models.Question.objects.all()
     

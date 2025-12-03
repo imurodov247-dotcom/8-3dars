@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/submissions',views.SubmissionListView.as_view(),name="submission_post"),
     path('api/my_test',views.SubmissionListView.as_view(),name="mytest-list"),
     path('api/tests/<int:test_id>/questions',views.TestQuestionListView.as_view(),name="mytest-list"),
+    path('api/questions/<int:pk>/questions',views.TestQuestionDetailView.as_view(),name="question-detail"),
     
 ]

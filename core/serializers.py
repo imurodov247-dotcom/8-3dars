@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     
 class AnswerSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=False)    
     class Meta:
         model = Answers
         fields = ["id","title","is_correct"]
@@ -39,6 +40,39 @@ class QuestionSerializer(serializers.ModelSerializer):
             
         return question
     
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title",instance.title)
+        instance.save()
+        
+        answers_data = validated_data.pop("answers")
+        new_answer_ids = []
+        
+        for answer_data in answers_data:
+            try:
+                try:
+                    answer_data["id"] = int(answer_data["id"])
+                except:
+                    new_answer = Answers.objects.create(
+                        title=answer_data['title'],
+                        is_correct=answer_data['is_correct'],
+                        question = instance
+                        )
+                    new_answer_ids.append(new_answer.id) 
+                    continue        
+               
+                answer = Answers.objects.get(pk=answer_data['id'])
+                answer = answer_data["title"]
+                answer.is_correct = answer_data["is_correct"]
+                new_answer_ids.append(answer.id)
+                answer.save()
+            except Answers.DoesNotExist:
+                continue
+                   
+        instance.answers.exclude(id__in = new_answer_ids).delete()
+        return instance
+    
+   
     def validate_answers(self,answers):
         count = 0
         for answer in answers:
