@@ -84,20 +84,35 @@ class QuestionSerializer(serializers.ModelSerializer):
         
     
 class TestSerializers(serializers.ModelSerializer):
+    questions = QuestionSerializer(many=True)
     creator = serializers.PrimaryKeyRelatedField(read_only=True)
-    question = QuestionSerializer(many=True,read_only=True)
     class Meta:
         model = Test
-        fields = ["id","nomi","creator","questions"]
+        fields = ["id","nomi","creator","questions",'created_at']
+        
+    def create(self, validated_data):
+        questions_data = validated_data.pop("questions")
+        test = Test.objects.create(**validated_data)
+        
+        for question_data in questions_data:
+            question_serializer = QuestionSerializer(data=questions_data)
+            question_serializer.is_valid(raise_exception=True)
+            question_serializer.save(test=test)
+        return test
     
 class SelectedAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only = True)
+    question_title = serializers.CharField(read_only = True)
+    answer_title = serializers.CharField(read_only = True)
+    correct_answer_title = serializers.CharField(read_only = True)
+    is_correct = serializers.BooleanField(read_only = True)
     question = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all())
     answer = serializers.PrimaryKeyRelatedField(queryset=Answers.objects.all())
     
 
 
 class SubmissionSerializer(serializers.Serializer):
-    test = serializers.PrimaryKeyRelatedField(queryset=Test.objects.all())
+    # test = serializers.PrimaryKeyRelatedField(queryset=Test.objects.all())
     selected_answers = SelectedAnswerSerializer(many=True)
     corrected_count = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
@@ -113,7 +128,19 @@ class SubmissionSerializer(serializers.Serializer):
         
         for selected_answer in validated_data["selected_answers"]:
             answer = selected_answer["answer"]
-            SelectedAnswer.objects.create(**selected_answer,submission=submission,is_correct=answer.is_correct)
+            question = selected_answer["question"]
+            correct_answer_title = ""
+            correct_answer_list = question.answer.filter(is_correct=True)
+            if correct_answer_list:
+                correct_answer_title = correct_answer_list[0].title
+            
+            SelectedAnswer.objects.create(
+                **selected_answer,
+                submission=submission,
+                is_correct=answer.is_correct,
+                question_title = question.title,
+                answet_title = answer.title,
+                correct_answer_title = correct_answer_title)
             
             if answer.is_correct:
                 corrected_count+=1
@@ -147,3 +174,57 @@ class MyTestSerializers(serializers.ModelSerializer):
     def get_submissionlar_soni(self, obj):
         return obj.submissions.count()
     
+    
+class MySubmissionSerializer(serializers.ModelSerializer):
+        test_name = serializers.SerializerMethodField()
+        correct_count = serializers.SerializerMethodField()
+        total_count = serializers.SerializerMethodField()
+        class Meta:
+            model = Submission
+            fields = ['id','test','test_name','correct_count','total_count','created_at']
+    
+    
+        def get_correct_count(self, obj):
+            return obj.selected_answers.filter(is_correct=True).count()
+        
+        
+        def get_total_count(self,obj):
+            return obj.selected_answers.count()
+        
+            
+        def get_test_name(self,obj):
+            return obj.test.nomi()
+        
+        
+        
+class SelectedAnswerFullSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only = True)
+    question_title = serializers.CharField(read_only = True)
+    answer_title = serializers.CharField(read_only = True)
+    correct_answer_title = serializers.CharField(read_only = True)
+    is_correct = serializers.BooleanField(read_only = True)
+    question = QuestionSerializer()
+    answer = AnswerSerializer()
+        
+        
+class SubmissionFullSerializer(serializers.ModelSerializer):
+    test_name = serializers.SerializerMethodField()
+    correct_count = serializers.SerializerMethodField()
+    total_count = serializers.SerializerMethodField()
+    selected_answers = SelectedAnswerFullSerializer(many=True)
+    class Meta:
+        model = Submission
+        fields = ['id','selected-answer','test','test_name','correct_count','total_count','created_at']
+        
+        
+        
+        def get_correct_count(self, obj):
+            return obj.selected_answers.filter(is_correct=True).count()
+        
+        
+        def get_total_count(self,obj):
+            return obj.selected_answers.count()
+        
+            
+        def get_test_name(self,obj):
+            return obj.test.nomi()

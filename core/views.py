@@ -5,17 +5,17 @@ from rest_framework.viewsets import ModelViewSet
 from . import serializers
 from . import models
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView,RetrieveAPIView,DestroyAPIView,UpdateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.exceptions import NotFound
 # Create your views here.
 
-class HelloView(APIView):
-    def get(self,request):
-        return Response({"text":"Heloo world"})
+# class HelloView(APIView):
+#     def get(self,request):
+#         return Response({"text":"Heloo world"})
     
     
-class TestModelViewSet(ModelViewSet):
+class TestUpdateDestroyApiView(DestroyAPIView,UpdateAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = serializers.TestSerializers
     queryset = models.Test.objects.all()
@@ -99,3 +99,15 @@ class TestQuestionDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.QuestionSerializer
     queryset = models.Question.objects.all()
     
+    
+class MysubmissionListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.MySubmissionSerializer
+    
+    
+    def get_queryset(self):
+        return models.Submission.objects.filter(user=self.request.user)
+    
+class SubmissionDetailView(RetrieveAPIView):
+    serializer_class = serializers.SubmissionFullSerializer
+    queryset = models.Submission.objects.all()
