@@ -13,7 +13,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # path('', views.HelloView.as_view(),name="hello"),
     path('api/tests/<int:pk>/',views.TestUpdateDestroyApiView.as_view(),name='test delete update'),
-     path('api/auth/login/', views.CustomObtainPairview.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/', views.CustomObtainPairview.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # path('api/tests/<int:test_pk>/questions',views.QuestionApiView.as_view(),name="question_post"),
     path('api/tests/<int:test_pk>/submission',views.SubmissionApiview.as_view(),name="submission_post"),
