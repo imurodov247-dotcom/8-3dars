@@ -149,3 +149,5 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+STATIC_ROOT = " /var/www/quiz/staticfiles"
